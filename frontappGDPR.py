@@ -66,36 +66,68 @@ def delete_marked_conversation(conversation_id):
 
 
 def find_conversations_with_input_and_tag_them(input, marked_for_deletion_tag_id):
+
     apiResponse = requests.get(api_conversations_url + input + "?limit=" + str(conversation_page_size), headers=header)
-    decodedInput = urllib.parse.unquote(input)
     conversations = apiResponse.json()
+
+    mark_for_deletion(conversations, input, marked_for_deletion_tag_id, False)
+
+
+    is_deleted_search_criteria = urllib.parse.quote(" is:deleted")
+    apiResponse = requests.get(
+        api_conversations_url + input + is_deleted_search_criteria + "?limit=" + str(conversation_page_size),
+        headers=header)
+    conversations = apiResponse.json()
+
+    mark_for_deletion(conversations, input, marked_for_deletion_tag_id, True)
+
+
+def is_marked_for_deletion_tag_exists(tags):
+    found_marked_for_deletion = False
+    for tag in tags:
+        if tag['name'] == marked_for_deletion_tag_name:
+            found_marked_for_deletion = True
+
+    return found_marked_for_deletion
+
+
+def mark_for_deletion(conversations, input, marked_for_deletion_tag_id, isDeletedCriteria):
+    decodedInput = urllib.parse.unquote(input)
+    conversationsFoundCounter = 0
+    isDeletedLogString = " in trash inbox" if isDeletedCriteria else ""
 
     while True:
         for conversation in conversations['_results']:
             conversation_id = conversation['id']
 
-            tag_conversation_url = "https://api2.frontapp.com/conversations/" + conversation_id + "/tags"
-            payload = {
-                "tag_ids": [marked_for_deletion_tag_id]
-            }
-            requests.post(tag_conversation_url, headers=header, json=payload)
+            marked_for_deletion_tag_exists = is_marked_for_deletion_tag_exists(conversation['tags'])
 
-            delete_marked_conversation(conversation_id)
+            if not marked_for_deletion_tag_exists:
+                tag_conversation_url = "https://api2.frontapp.com/conversations/" + conversation_id + "/tags"
+                payload = {
+                    "tag_ids": [marked_for_deletion_tag_id]
+                }
+                requests.post(tag_conversation_url, headers=header, json=payload)
+
+                delete_marked_conversation(conversation_id)
+
+                conversationsFoundCounter+=1
 
         if conversations["_total"] < conversation_page_size or conversations["_pagination"]["next"] is None:
-            if conversations["_total"] > 0:
-                writeLog('------FOUND total conversations for input '"" + decodedInput + '" : ' + str(
-                    conversations["_total"]))
-                writeResult('------FOUND total conversations for input '"" + decodedInput + '" : ' + str(
-                    conversations["_total"]))
-            if conversations["_total"] == 0:
-                writeLog('------NOTHING FOUND for input '"" + decodedInput)
-                writeError('------NOTHING FOUND for input '"" + decodedInput)
+
+            if conversationsFoundCounter > 0:
+                writeLog('------FOUND total conversations'+isDeletedLogString+' for input '"" + decodedInput + '" : ' + str(conversationsFoundCounter))
+                writeResult('------FOUND total conversations '+isDeletedLogString+' for input '"" + decodedInput + '" : ' + str(conversationsFoundCounter))
+
+            if conversationsFoundCounter == 0:
+                writeLog('------NOTHING FOUND '+isDeletedLogString+' for input '"" + decodedInput)
+                writeError('------NOTHING FOUND '+isDeletedLogString+' for input '"" + decodedInput)
+
             break
 
-        writeLog('------FOUND total conversations for input '"" + decodedInput + '" : ' + str(conversations["_total"]))
-        writeResult(
-            '------FOUND total conversations for input '"" + decodedInput + '" : ' + str(conversations["_total"]))
+        if conversationsFoundCounter > 0:
+            writeLog( '------FOUND '+isDeletedLogString+' total conversations for input '"" + decodedInput + '" : ' + str(conversations["_total"]))
+            writeResult('------FOUND '+isDeletedLogString+' total conversations for input '"" + decodedInput + '" : ' + str(conversations["_total"]))
 
         page_token = conversations["_pagination"]["next"]
         apiResponse = requests.get(page_token, headers=header)

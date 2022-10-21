@@ -1,1 +1,3 @@
-
+------FOUND total conversations  in deleted directories  for input lambros14@hotmail.com" : 1
+------FOUND total conversations  for input lambros@ees.gr" : 3
+------FOUND total conversations  in deleted directories  for input lambros@ees.gr" : 1
