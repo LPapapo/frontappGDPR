@@ -26,8 +26,12 @@ When you run the script, all team inboxes and trash inboxes are searched and a r
 
 1. Make sure that you have the API access token placed in the config file . 
 2. The next step is to open input.txt and copy all of the emails that need to be deleted into the txt file line by line.(save the changes)
-3. Start the search by opening the frontappGDPR forlder in terminal and typing 'python frontappGDPR.py'.
-4.  After the search is finished, you can review the errors, logs, and results by opening the .txt files .
+3. Start the search by opening the frontappGDPR forlder in terminal(cmd) and typing 'python frontappGDPR.py'.
+4. After the search is finished, you can review the errors, logs, and results by opening the .txt files .
+5. All search results are tagged in Frontapp as marked-for-deletion and placed in Trash inbox
+6. Select all and choose permantly delete .
+
+Because the Front API does not support the state 'destroyed' in order to automatically permanent delete the results, you must manually permanent delete them at the end.
 
 
 
