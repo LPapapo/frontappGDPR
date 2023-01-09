@@ -23,7 +23,7 @@ When you run the script, all team inboxes and trash inboxes are searched and a r
 
 
 ### How to use it ?
-
+(Make sure you have 'Python' and 'requests' module installed (run in cmd 'pip install requests')
 1. Make sure that you have the API access token placed in the config file . 
 2. The next step is to open input.txt and copy all of the emails that need to be deleted into the txt file line by line.(save the changes)
 3. Start the search by opening the frontappGDPR forlder in terminal(cmd) and typing 'python frontappGDPR.py'.
